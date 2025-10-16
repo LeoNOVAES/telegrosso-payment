@@ -32,12 +32,15 @@ func (s *PaymentUsecases) ConfirmPayment(external_id string, provider string) (d
 		return domain.Payment{}, errors.New("pagamento nao aprovado")
 	}
 
-	s.repository.UpdateByExternalId(&payment)
+	errUpdate := s.repository.UpdateByExternalId(&payment)
+
+	if errUpdate != nil {
+		return domain.Payment{}, err
+	}
 
 	parts := strings.Split(payment.ExternalReference, ":")
-
+	userId := parts[0]
 	planId := parts[1]
-	userId := parts[2]
 
 	if planId == "" || userId == "" {
 		return domain.Payment{}, errors.New("usuario ou plano invalidos")
