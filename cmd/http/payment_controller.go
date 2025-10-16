@@ -69,7 +69,6 @@ func (h *PaymentController) CallbackfromMercadoPago(c *gin.Context) {
 	}
 
 	payment, errSubs := h.usecase.ConfirmPayment(payload.Data.ID, "mercadopago")
-	fmt.Printf("ERRRR %v", errSubs)
 
 	if errSubs != nil {
 		fmt.Sprintf("error to confirm payment %v", errSubs)
