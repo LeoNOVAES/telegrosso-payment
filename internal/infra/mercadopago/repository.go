@@ -11,11 +11,6 @@ import (
 	"github.com/throindev/payments/internal/infra"
 )
 
-var (
-	MercadoPagoBaseURL = ""
-	PaymentEndpoint    = ""
-)
-
 type MercadoPagoRepository struct {
 	client infra.HTTPClient
 }
@@ -62,7 +57,7 @@ func (c *MercadoPagoRepository) GetPayment(id string) (domain.Payment, error) {
 	fmt.Println("Chamando Mercado Pago para buscar um Payment:", id)
 	var response PaymentResponse
 
-	err := c.client.Get(fmt.Sprintf("%s%s/%s", MercadoPagoBaseURL, PaymentEndpoint, id), &response)
+	err := c.client.Get(fmt.Sprintf("%s/%s", config.AppConfig.ProviderUrl, id), &response)
 
 	if err != nil {
 		log.Printf("Erro ao pegar pagamento %v", err)
