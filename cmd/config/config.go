@@ -8,10 +8,11 @@ import (
 )
 
 type Config struct {
-	MercadoPagoToken string
-	MongoURI         string
-	DbName           string
-	Port             string
+	ProviderToken string
+	ProviderUrl   string
+	MongoURI      string
+	DbName        string
+	Port          string
 }
 
 var AppConfig Config
@@ -22,9 +23,10 @@ func Load() {
 	}
 
 	AppConfig = Config{
-		MercadoPagoToken: os.Getenv("MERCADO_PAGO_TOKEN"),
-		MongoURI:         os.Getenv("MONGODB_URI"),
-		DbName:           os.Getenv("DB_NAME"),
-		Port:             os.Getenv("PORT"),
+		ProviderToken: os.Getenv("PROVIDER_TOKEN"),
+		ProviderUrl:   os.Getenv("PROVIDER_URL"),
+		MongoURI:      os.Getenv("MONGODB_URI"),
+		DbName:        os.Getenv("DB_NAME"),
+		Port:          os.Getenv("PORT"),
 	}
 }

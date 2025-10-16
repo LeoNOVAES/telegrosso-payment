@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	MercadoPagoBaseURL = "https://api.mercadopago.com/v1"
-	PaymentEndpoint    = "/payments"
+	MercadoPagoBaseURL = ""
+	PaymentEndpoint    = ""
 )
 
 type MercadoPagoRepository struct {
@@ -22,7 +22,7 @@ type MercadoPagoRepository struct {
 
 func NewClient() *MercadoPagoRepository {
 	headers := map[string]string{
-		"Authorization": fmt.Sprintf("Bearer %s", config.AppConfig.MercadoPagoToken),
+		"Authorization": fmt.Sprintf("Bearer %s", config.AppConfig.ProviderToken),
 	}
 
 	client := infra.NewHTTPClient(headers, 30*time.Second)
@@ -48,7 +48,7 @@ func (c *MercadoPagoRepository) CreatePayment(amount float64, description string
 		"external_reference": external_code,
 	}
 
-	err := c.client.Post(MercadoPagoBaseURL+PaymentEndpoint, payload, &response, customHeader)
+	err := c.client.Post(config.AppConfig.ProviderUrl, payload, &response, customHeader)
 
 	if err != nil {
 		log.Printf("Erro ao criar Payment para PaymentID %s: %v", external_code, err)
