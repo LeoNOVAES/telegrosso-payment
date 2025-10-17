@@ -15,12 +15,18 @@ import (
 	"github.com/throindev/payments/cmd/http"
 	"github.com/throindev/payments/internal/infra/mercadopago"
 	"github.com/throindev/payments/internal/infra/mongodb"
+	"github.com/throindev/payments/internal/infra/rabbitmq"
 	"github.com/throindev/payments/internal/usecases"
 )
 
 func main() {
 	config.Load()
 	mongoClient := mongodb.NewMongoClient(config.AppConfig.MongoURI, config.AppConfig.DbName)
+
+	rabbitmq := rabbitmq.NewRabbitMQRepository()
+
+	defer rabbitmq.Connection.Close()
+	defer rabbitmq.Connection.Channel()
 
 	r := gin.Default()
 
@@ -50,6 +56,7 @@ func main() {
 		api.POST("/payment/mercadopago/callback", paymentController.CallbackfromMercadoPago)
 		api.POST("/payment", paymentController.CreatePayment)
 		api.POST("/plan", planController.CreatePlan)
+		api.GET("/plan", planController.GetPlans)
 	}
 
 	r.GET("/", func(c *gin.Context) {

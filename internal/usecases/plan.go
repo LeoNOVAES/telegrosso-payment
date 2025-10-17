@@ -41,6 +41,17 @@ func (s *PlanUsecases) CreatePlan(
 	return plan, nil
 }
 
+func (s *PlanUsecases) FindAll() ([]domain.Plan, error) {
+	plans, err := s.repository.FindAll()
+
+	if err != nil {
+		fmt.Printf("error to GET Plans %v", err)
+		return []domain.Plan{}, err
+	}
+
+	return plans, nil
+}
+
 func (s *PlanUsecases) FindById(id string) (*domain.Plan, error) {
 	plan, err := s.repository.FindByID(id)
 

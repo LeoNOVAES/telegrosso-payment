@@ -50,3 +50,22 @@ func (r *PlanMongoRepository) FindByID(id string) (*domain.Plan, error) {
 	}
 	return &pay, nil
 }
+
+func (r *PlanMongoRepository) FindAll() ([]domain.Plan, error) {
+	cursor, err := r.client.DB.Collection(r.collectionName).Find(context.Background(), bson.D{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.Background())
+
+	var results []domain.Plan
+	for cursor.Next(context.Background()) {
+		var item domain.Plan
+		if err := cursor.Decode(&item); err != nil {
+			return nil, err
+		}
+		results = append(results, item)
+	}
+
+	return results, cursor.Err()
+}

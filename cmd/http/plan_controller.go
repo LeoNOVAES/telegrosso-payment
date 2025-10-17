@@ -50,3 +50,15 @@ func (h *PlanController) CreatePlan(c *gin.Context) {
 
 	c.JSON(http.StatusOK, plan)
 }
+
+func (h *PlanController) GetPlans(c *gin.Context) {
+	results, err := h.usecase.FindAll()
+
+	if err != nil {
+		fmt.Sprintf("error to GET Plans %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ERROR TO GTE PLANS"})
+		return
+	}
+
+	c.JSON(http.StatusOK, results)
+}
