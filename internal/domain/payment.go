@@ -25,6 +25,7 @@ type Payment struct {
 	TicketURL         string    `bson:"ticket_url" json:"ticket_url"`
 	Status            string    `bson:"status" json:"status"`
 	DateApproved      time.Time `bson:"date_approved" json:"date_approved"`
+	ChatId            string    `bson:"chat_id" json:"chat_id"`
 	CreatedAt         time.Time `bson:"created_at" json:"created_at"`
 	UpdatedAt         time.Time `bson:"updated_at" json:"updated_at"`
 }
@@ -41,6 +42,7 @@ func NewPayment(
 	dateApproved time.Time,
 	status string,
 	planId string,
+	chatId string,
 ) Payment {
 	payer := fmt.Sprintf("%s@noreply.com", external_code)
 
@@ -58,5 +60,6 @@ func NewPayment(
 		TicketURL:         ticketUrl,
 		Status:            status,
 		PlanId:            planId,
+		ChatId:            chatId,
 	}
 }

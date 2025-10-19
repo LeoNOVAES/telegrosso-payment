@@ -66,6 +66,18 @@ func (r *PaymentMongoRepository) FindByID(id string) (*domain.Payment, error) {
 	return &pay, nil
 }
 
+func (r *PaymentMongoRepository) FindByExternalId(id string) (*domain.Payment, error) {
+	var pay domain.Payment
+	err := r.client.DB.Collection(r.collectionName).FindOne(
+		context.Background(),
+		bson.M{"external_id": id},
+	).Decode(&pay)
+	if err != nil {
+		return nil, err
+	}
+	return &pay, nil
+}
+
 func (r *PaymentMongoRepository) FindByUserID(userID string) (*domain.Payment, error) {
 	var pay domain.Payment
 	err := r.client.DB.Collection(r.collectionName).FindOne(

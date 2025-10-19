@@ -80,5 +80,6 @@ func (c *MercadoPagoRepository) parseToPayment(response PaymentResponse) domain.
 		response.DateApproved,
 		response.Status,
 		"",
+		"",
 	)
 }

@@ -23,10 +23,10 @@ func main() {
 	config.Load()
 	mongoClient := mongodb.NewMongoClient(config.AppConfig.MongoURI, config.AppConfig.DbName)
 
-	rabbitmq := rabbitmq.NewRabbitMQRepository()
+	rabbitMQRepository := rabbitmq.NewRabbitMQRepository()
 
-	defer rabbitmq.Connection.Close()
-	defer rabbitmq.Connection.Channel()
+	defer rabbitMQRepository.Connection.Close()
+	defer rabbitMQRepository.Connection.Channel()
 
 	r := gin.Default()
 
@@ -45,7 +45,7 @@ func main() {
 	//usecases
 	planUsecase := usecases.NewPlanUsecases(planMongoRepository)
 	subscriptionUsecases := usecases.NewSubscriptionUsecases(subscriptionMongoRepository, planUsecase)
-	paymentUsecases := usecases.NewPaymentUsecases(paymentMongoRepository, mercadopagoProvider, subscriptionUsecases, planUsecase)
+	paymentUsecases := usecases.NewPaymentUsecases(paymentMongoRepository, mercadopagoProvider, subscriptionUsecases, planUsecase, rabbitMQRepository)
 
 	//controllers
 	paymentController := http.NewPaymentController(paymentUsecases)

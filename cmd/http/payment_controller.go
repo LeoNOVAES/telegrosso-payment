@@ -31,6 +31,7 @@ func (h *PaymentController) CreatePayment(c *gin.Context) {
 		Method string `json:"method"`
 		UserId string `json:"user_id"`
 		PlanId string `json:"plan_id"`
+		ChatId string `json:"chat_id"`
 	}
 
 	if err := json.Unmarshal(body, &payload); err != nil {
@@ -38,7 +39,7 @@ func (h *PaymentController) CreatePayment(c *gin.Context) {
 		return
 	}
 
-	payment, err := h.usecase.CreatePayment(payload.Method, payload.UserId, payload.PlanId)
+	payment, err := h.usecase.CreatePayment(payload.Method, payload.UserId, payload.PlanId, payload.ChatId)
 
 	if err != nil {
 		fmt.Sprintf("error to create payment %v", err)

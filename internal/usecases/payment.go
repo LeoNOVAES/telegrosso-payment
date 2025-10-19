@@ -14,31 +14,34 @@ type PaymentUsecases struct {
 	provider            interfaces.PaymentProvider
 	subscriptionUsecase SubscriptionUsecases
 	planUsecase         PlanUsecases
+	eventbusRepository  interfaces.EventBus
 }
 
-func NewPaymentUsecases(repository domain.PaymentRepository, provider interfaces.PaymentProvider, subscriptionUsecase SubscriptionUsecases, planUsecase PlanUsecases) PaymentUsecases {
-	return PaymentUsecases{repository, provider, subscriptionUsecase, planUsecase}
+func NewPaymentUsecases(repository domain.PaymentRepository, provider interfaces.PaymentProvider, subscriptionUsecase SubscriptionUsecases, planUsecase PlanUsecases, eventbus interfaces.EventBus) PaymentUsecases {
+	return PaymentUsecases{repository, provider, subscriptionUsecase, planUsecase, eventbus}
 }
 
 func (s *PaymentUsecases) ConfirmPayment(external_id string, provider string) (domain.Payment, error) {
-	payment, err := s.GetPaymentFromProvider(external_id)
+	paymentFromProvider, err := s.GetPaymentFromProvider(external_id)
 
 	if err != nil {
 		fmt.Printf("Error to get payment %s -> %v", external_id, err)
 		return domain.Payment{}, err
 	}
 
-	if payment.Status != "approved" {
+	if paymentFromProvider.Status != "approved" {
 		return domain.Payment{}, errors.New("pagamento nao aprovado")
 	}
 
-	errUpdate := s.repository.UpdateByExternalId(&payment)
+	errUpdate := s.repository.UpdateByExternalId(&paymentFromProvider)
+	payment, _ := s.repository.FindByExternalId(external_id)
+	fmt.Printf("AAAAAAAAAAAAAAAAA %v", payment)
 
 	if errUpdate != nil {
 		return domain.Payment{}, err
 	}
 
-	parts := strings.Split(payment.ExternalReference, ":")
+	parts := strings.Split(paymentFromProvider.ExternalReference, ":")
 	userId := parts[0]
 	planId := parts[1]
 
@@ -53,13 +56,13 @@ func (s *PaymentUsecases) ConfirmPayment(external_id string, provider string) (d
 		return domain.Payment{}, errors.New("plano nao existe")
 	}
 
-	_, errSubscription := s.subscriptionUsecase.CreateSubscription(
+	subscription, errSubscription := s.subscriptionUsecase.CreateSubscription(
 		userId,
 		payment.TransactionAmount,
 		"BRL",
 		provider,
 		payment.DateApproved,
-		payment,
+		*payment,
 		map[string]any{},
 		plan.ID,
 	)
@@ -69,10 +72,13 @@ func (s *PaymentUsecases) ConfirmPayment(external_id string, provider string) (d
 		return domain.Payment{}, err
 	}
 
-	return payment, nil
+	event := domain.NewEvent(domain.EventPaymentConfirmed, subscription)
+
+	s.eventbusRepository.Publish(event.EventType, event)
+	return *payment, nil
 }
 
-func (s *PaymentUsecases) CreatePayment(typePayment string, userId string, planId string) (domain.Payment, error) {
+func (s *PaymentUsecases) CreatePayment(typePayment string, userId string, planId string, chatId string) (domain.Payment, error) {
 	plan, err := s.planUsecase.FindById(planId)
 
 	if err != nil || plan == nil {
@@ -84,6 +90,7 @@ func (s *PaymentUsecases) CreatePayment(typePayment string, userId string, planI
 
 	paymentFromProvider, err := s.provider.CreatePayment(plan.Price, description, typePayment, userId, planId)
 	paymentFromProvider.PlanId = planId
+	paymentFromProvider.ChatId = chatId
 
 	if err != nil {
 		fmt.Printf("error to create payment in provider %v", err)
